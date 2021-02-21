@@ -1,5 +1,4 @@
 # to calculate radius, only in pixels but not considering resolution
-
 import numpy as np
 from scipy import ndimage, signal, interpolate
 from skimage import measure

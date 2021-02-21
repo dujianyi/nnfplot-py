@@ -1,9 +1,10 @@
 # functions for LAOS
 from nnfPlot import *
+from numba import jit
+import re
 
 def LAOSread(filename, strain, sinewave, category):
-    import re
-    rawxls = [readXLS(filename, reindex=1, appTag = {'Concentration':category, 'Strain':'{:.3f}'.format(strain[i]*100)+'%'}, sheet_name='Sine Strain - '+str(j), skiprows=[0], header = [0, 1]) for i, j in enumerate(sinewave)]
+    rawxls = [fileOp.readXLS(filename, reindex=1, appTag = {'Concentration':category, 'Strain':'{:.3f}'.format(strain[i]*100)+'%'}, sheet_name='Sine Strain - '+str(j), skiprows=[0], header = [0, 1]) for i, j in enumerate(sinewave)]
     LAOSread = pd.concat(rawxls, axis=0)
     LAOSread.rename(columns=lambda x: re.sub('(.+)\s+\(Unnamed:.+\)', r'\1 (-)', x), inplace=True)
     return LAOSread

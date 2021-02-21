@@ -4,7 +4,6 @@ from PIL import Image, ImageStat, ImageOps
 import glob
 import os
 from scipy import interpolate, ndimage, signal, interpolate
-from skimage import measure
 import re
 from datetime import datetime
 
@@ -28,7 +27,7 @@ def plotNoRetard(folder, pattern='/*.tif'):
     xe = np.array([float(os.path.splitext(os.path.basename(i))[0]) for i in images])
     ye = [(meanGreen(Image.open(images[i]))-meanMin)/(meanMax-meanMin) for i in range(0, len(images))]
     plt.plot(xe, ye, 'o')
-    x, y = refLine(lambda x: np.cos(x*np.pi/180)**2, xrange=[0, 90])
+    x, y = dataOp.refLine(lambda x: np.cos(x*np.pi/180)**2, xrange=[0, 90])
     plt.plot(x, y)
     plt.xlabel(r'$\theta$')
     plt.ylabel(r'$I/I_0$')
@@ -36,11 +35,11 @@ def plotNoRetard(folder, pattern='/*.tif'):
 
 def calibrateNoRetard(xe, ye):
     ## calibration of intensity with theoretical cosine results
-    x0, y0 = refLine(lambda x: np.cos(x*np.pi/180)**2, xin=xe)
+    x0, y0 = dataOp.refLine(lambda x: np.cos(x*np.pi/180)**2, xin=xe)
     plt.plot(ye, y0, 'o')
     plt.xlabel(r'$I/I_0(imagePixel)$')
     plt.ylabel(r'$I/I_0$')
-    xr, yr = refLine(lambda x: x, xrange = [0, 1])
+    xr, yr = dataOp.refLine(lambda x: x, xrange = [0, 1])
     plt.plot(xr, yr, '--')
 
     f = np.poly1d(np.polyfit(ye, y0, 3))
@@ -65,7 +64,7 @@ def plotRetarder(folder, f, wlRetarder, pattern='/*[0-9].tif', wl=525, thetaCorr
     
     delta = 2*np.pi*wlRetarder/wl
     I0 = np.sin(delta/2)**2
-    x, y = refLine(lambda x: I0*np.sin(2*(x*np.pi/180-np.pi/4+thetaCorr))**2, xrange=[0, 90])
+    x, y = dataOp.refLine(lambda x: I0*np.sin(2*(x*np.pi/180-np.pi/4+thetaCorr))**2, xrange=[0, 90])
     plt.plot(x, y, '-')
     plt.xlabel(r'$\phi-45^\circ$')
     plt.ylabel(r'$I/I_0$')
@@ -73,7 +72,7 @@ def plotRetarder(folder, f, wlRetarder, pattern='/*[0-9].tif', wl=525, thetaCorr
 
 def calRetarder(xe, ye, wl=525, thetaCorr=0):
     ## calculation of retardation (delta_n*thickness) from fitting a cosine wave
-    params = Parameters()
+    params = dataOp.Parameters()
     params.add('delta' , value = 0.5,  min = 0,    max = np.pi,   vary = True)
     fun = lambda params, t: (np.sin(params['delta']/2)**2)*np.sin(2*(t*np.pi/180-np.pi/4+thetaCorr))**2
 
@@ -81,7 +80,7 @@ def calRetarder(xe, ye, wl=525, thetaCorr=0):
     res = minner.minimize()
     # res = params
     
-    x, y = refLine(lambda x: fun(res.params, x), xrange=[0, 90])
+    x, y = dataOp.refLine(lambda x: fun(res.params, x), xrange=[0, 90])
     plt.plot(x, y, '-')
     finres = res.params['delta'].value*wl/(2*np.pi)
     return finres
@@ -101,6 +100,7 @@ def logCalc(img, sigma, fsize):
     h = h1 - np.sum(h1)/sigma
     h = h - np.sum(h)/np.size(h)
     return ndimage.convolve(img, h, mode='nearest')
+
 
 def edgeFinding1D(frame, fig, fsize=4, thresh=1, imgOrient=0):
     
@@ -167,7 +167,6 @@ def calDiameter(image, **kwargs):
     return np.abs(y1-y2)
 
 ########## IL fibers ##########
-
 def processFiberIandD(images, f, loc='mid', davg=None, fig=False, scaleBar=1, **kwargs):  # scalebar, um/px
     # for IL fibers only, raw data with scaleBar
     # 'mid': return I(1*n) and d(1*n) (dimensional)
