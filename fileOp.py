@@ -23,7 +23,7 @@ def readTxtDelimiter(fileName, delimiter='[step]', title=[0], header=[1,2]):
                 df = pd.read_csv(stringData, sep="\t", skiprows=title, header=header)
                 df.to_excel(writer, entry.split('\n')[title[0]+1])
         writer.save()
-        
+
 def readXLS(fileName, reindex=False, appTag=None, *args, **kwargs):
     # read from a xls sheet with the same arguments as read_excel
     if os.path.exists(fileName+'.xlsx') or os.path.exists(fileName+'.xls'):

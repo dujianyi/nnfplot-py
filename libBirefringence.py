@@ -76,7 +76,7 @@ def calRetarder(xe, ye, wl=525, thetaCorr=0):
     params.add('delta' , value = 0.5,  min = 0,    max = np.pi,   vary = True)
     fun = lambda params, t: (np.sin(params['delta']/2)**2)*np.sin(2*(t*np.pi/180-np.pi/4+thetaCorr))**2
 
-    minner = Minimizer(lambda params: fun(params, xe) - ye, params)
+    minner = dataOp.Minimizer(lambda params: fun(params, xe) - ye, params)
     res = minner.minimize()
     # res = params
     

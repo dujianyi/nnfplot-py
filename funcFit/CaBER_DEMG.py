@@ -5,14 +5,15 @@ from scipy.integrate import odeint, solve_ivp
 from scipy.interpolate import interp1d
 
 
-def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
+def CaBER_DEMG(params, t, manOut=False, rtol=1e-13, atol=1e-13):
     # all with SI units
     # infinite extensibility
     # Adopt the form of Larson with finite extensibility derived from K-H form
     # Separated form of S and lambda
     # L == -1: infinite extensibility
+    # adapted from the RP form
     
-    def dydt_CaBER_RoliePoly(t, y, L, tau_d, tau_s, b, dl):
+    def dydt_CaBER_DEMG(t, y, L, tau_d, tau_s):
         if (y[2] > L) and (L > 0):
             return [0, 0, 0]
         else:
@@ -35,7 +36,7 @@ def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
             sr_lmd =  4/lmd + 2*Cf
 
             # Three equations: Srr_dot, Szz_dot, lmd_dot
-            relaxTerm = 1/(lmd**2)*(1/tau_d + 2*b*f*(lmd-1)/tau_s * (lmd**(dl-1))) # constant of disengagement term, check Larson
+            relaxTerm = 1/(lmd**2)*(1/tau_d) # constant of disengagement term, check Larson
             
             # front factor in (k:S): k:S = sr_Srr*Srr_dot + sr_Szz*Szz_dot + sr_lmd*lmd_dot 
             kS_Srr = (Szz-Srr)*sr_Srr
@@ -47,7 +48,7 @@ def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
                                 [ -lmd*(kS_Srr),                -lmd*(kS_Szz),               1-lmd*(kS_lmd)]])
             iB = [[-relaxTerm*(Srr-1/3)],
                   [-relaxTerm*(Szz-1/3)],
-                  [-f/tau_s*(lmd-1)-relaxTerm*((lmd**2)-1)/(2*lmd)*(lmd**2)]]
+                  [-f/tau_s*(lmd-1)]]
             dy = np.matmul(iA, iB).flatten()
         return dy
 
@@ -59,11 +60,8 @@ def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
     R0 = params['R0']
     L = params['L']
 
-    b = 1
-    dl = -0.5
-    c0 = gm/(3*G*R0)
-    # assume initial stretch of 1
 
+    c0 = gm/(3*G*R0)
     if L==-1:
         f = lambda lmd: 1
     else:
@@ -78,14 +76,15 @@ def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
         Szz0 = 1
 
     if type(t) == np.ndarray:
-        sol = solve_ivp(dydt_CaBER_RoliePoly, (0, 1.2*(t.max()-t.min())), [Srr0, Szz0, ep0], t_eval=t-t.min(), args=(L, tau_d, tau_s, b, dl),
+        sol = solve_ivp(dydt_CaBER_DEMG, (0, 1.2*(t.max()-t.min())), [Srr0, Szz0, ep0], t_eval=t-t.min(), args=(L, tau_d, tau_s),
                         rtol=rtol, atol=atol)
     else:
-        sol = solve_ivp(dydt_CaBER_RoliePoly, (0, 1.2*t), [Srr0, Szz0, ep0], args=(L, tau_d, tau_s, b, dl),
+        sol = solve_ivp(dydt_CaBER_DEMG, (0, 1.2*t), [Srr0, Szz0, ep0], args=(L, tau_d, tau_s),
                         rtol=rtol, atol=atol)
     Srr = sol.y[0, :]
     Szz = sol.y[1, :]
     lmd = sol.y[2, :]
+
 
     if L==-1:
         f = 1
@@ -97,7 +96,7 @@ def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
     dzz_rr = Szz-Srr
 
     R = gm/(3*G*f*(lmd**2)*dzz_rr)
-    dSol = np.array([dydt_CaBER_RoliePoly(0, [Srr[i], Szz[i], lmd[i]], L, tau_d, tau_s, b, dl) for i in range(len(Srr))])
+    dSol = np.array([dydt_CaBER_DEMG(0, [Srr[i], Szz[i], lmd[i]], L, tau_d, tau_s) for i in range(len(Srr))])
 
     # calculation of strain rate and viscosity
 
@@ -124,6 +123,8 @@ def CaBER_RoliePoly(params, t, manOut=False, rtol=1e-13, atol=1e-13):
     #     f_vis = interp1d(st, vis, kind='linear', fill_value='extrapolate')
     #     st = st_in
     #     vis = f_vis(st)
+
     if manOut==False:
         return R
     return sol.t, Srr, Szz, lmd, R, epsilon_dot, extVis
+

@@ -21,6 +21,9 @@ from PIL import Image, ImageStat, ImageOps
 # numba
 from numba import jit
 
+# warnings 
+import warnings
+warnings.filterwarnings('ignore')
 
 # Environment
 
@@ -68,3 +71,4 @@ mkHC = mpath.Path(np.concatenate([_circle.vertices, _circle_inner.vertices[::-1]
 import fileOp
 import dataOp
 import imagOp
+# import foamOp

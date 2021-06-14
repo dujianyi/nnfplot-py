@@ -38,28 +38,28 @@ def fitLine(initParams, fitPack=None, fitRange=None, logFit=False, minFun=None):
                 datacopy = datacopy[(datacopy[ix]>=fitRange[i][0]) & (datacopy[ix]<=fitRange[i][1])]
             if logFit:
                 datacopy = datacopy[datacopy[iy]>0]
-                res.append(np.log(f(params, datacopy[ix]))-np.log(datacopy[iy]))
+                res.append(np.log(f(params, datacopy[ix].to_numpy()))-np.log(datacopy[iy]))
             else:
-                res.append(f(params, datacopy[ix])-datacopy[iy])
+                res.append(f(params, datacopy[ix].to_numpy())-datacopy[iy])
         res = np.array(res).flatten()
         # res[res>1e308] = 1e20
         # res[np.isnan(res)] = 1e20
+        print('Now fitting:', iy, 'Size:', res.shape, end='\r')
         return res
-        
+
     if minFun is None:
         minner = Minimizer(objective, initParams)
     else:
         # Directly given minFun
         minner = Minimizer(minFun, initParams)
-        
+
     print('Start fitting...')
-    
     try:
         result = minner.minimize(method='leastsq')
         print('Finished fitting...')
         return result
     except TypeError: 
-        print('Error: all data seem to be NaN...')
+        print('Errors occur in evaluating the function.')
         raise
 
     #np.sum(result.residual)

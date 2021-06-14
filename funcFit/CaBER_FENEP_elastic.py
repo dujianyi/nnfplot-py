@@ -3,8 +3,9 @@ from scipy.optimize import fsolve
 
 def CaBER_FENEP_elastic(params, t, nargout=1):
     # D - mm
-    # t - ms
     # others in SI units
+    # The form of Caroline's 2015 JNNFM, Eqn 10, using Ec, b, and lamb
+    # Ec=1/2/ln(Rplate/R0)
     
     b = params['b']
     Ec = params['Ec']
@@ -12,7 +13,7 @@ def CaBER_FENEP_elastic(params, t, nargout=1):
     t0 = params['t0']
     D0 = params['D0']
 
-    tau = (t-t0)/1000/lamb
+    tau = (t-t0)/lamb
     f = lambda x, t: (1/(1+Ec*(b+3)) - 1/(1+x*Ec*(b+3))) + 3*np.log((1+x*Ec*(b+3))/(1+Ec*(b+3))) + 4*Ec*(b+3)/(b+2)*(x-1) + (b+3)**2/(b*(b+2))*t
     
     dia = np.zeros(len(tau))
