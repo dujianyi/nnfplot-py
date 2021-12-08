@@ -26,7 +26,7 @@ def refLine(fun, xrange=None, xin=None):
     else:
         return xin, fun(xin)
 
-def fitLine(initParams, fitPack=None, fitRange=None, logFit=False, minFun=None):
+def fitLine(initParams, fitPack=None, fitRange=None, logFit=False, minFun=None, **kwargs):
     # data is dataFrame, x, y, minFun is list of str/functions to fit correspondingly
     import numpy as np
 
@@ -38,12 +38,10 @@ def fitLine(initParams, fitPack=None, fitRange=None, logFit=False, minFun=None):
                 datacopy = datacopy[(datacopy[ix]>=fitRange[i][0]) & (datacopy[ix]<=fitRange[i][1])]
             if logFit:
                 datacopy = datacopy[datacopy[iy]>0]
-                res.append(np.log(f(params, datacopy[ix].to_numpy()))-np.log(datacopy[iy]))
+                res.append(np.log(f(params, datacopy[ix].to_numpy()))-np.log(datacopy[iy].to_numpy()))
             else:
-                res.append(f(params, datacopy[ix].to_numpy())-datacopy[iy])
-        res = np.array(res).flatten()
-        # res[res>1e308] = 1e20
-        # res[np.isnan(res)] = 1e20
+                res.append(f(params, datacopy[ix].to_numpy())-datacopy[iy].to_numpy())
+        res = np.concatenate([i for i in res])
         print('Now fitting:', iy, 'Size:', res.shape, end='\r')
         return res
 
@@ -55,7 +53,7 @@ def fitLine(initParams, fitPack=None, fitRange=None, logFit=False, minFun=None):
 
     print('Start fitting...')
     try:
-        result = minner.minimize(method='leastsq')
+        result = minner.minimize(**kwargs)
         print('Finished fitting...')
         return result
     except TypeError: 

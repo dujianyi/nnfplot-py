@@ -103,7 +103,7 @@ def logCalc(img, sigma, fsize):
 
 
 def edgeFinding1D(frame, fig, fsize=4, thresh=1, imgOrient=0):
-    
+    from scipy import ndimage, misc
     def normalizeGray(frame):
         sh = np.shape(frame)
         output = frame
@@ -128,16 +128,16 @@ def edgeFinding1D(frame, fig, fsize=4, thresh=1, imgOrient=0):
         h = h1 - np.sum(h1)/sigma
         h = h - np.sum(h)/np.size(h)
         return ndimage.convolve(img, h, mode='nearest')
-    
+    print(9)
     # imgOrient: 0, vertical fiber; 1, horizontal fiber
-    sigma = fsize*6+1
+    sigma = fsize
     # img = normalizeGray(frame)
-    img = np.array(ImageOps.grayscale(frame))
-    img = img/np.max(img)
-    # result = ndimage.gaussian_laplace(img, sigma=sigma)
-    result = logCalc(img, sigma, fsize)
+    img = np.array(frame)[:,:,1]
+    # img = np.array(ImageOps.grayscale(frame))
+    img = ((img - np.min(img))/(np.max(img) - np.min(img)))**(1/2)
+    # result = logCalc(img, sigma, fsize)
+    result = ndimage.gaussian_laplace(img, sigma=sigma)
     result = result.sum(axis=imgOrient)
-    
     diffRes = result[1:]-result[:-1]
     if fig:
         plt.figure()

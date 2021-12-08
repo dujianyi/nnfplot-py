@@ -4,6 +4,7 @@
 # plot
 import seaborn as sns
 import matplotlib.pyplot as plt
+from IPython.display import display, HTML
 
 # data
 import pandas as pd
@@ -29,14 +30,14 @@ warnings.filterwarnings('ignore')
 
 # Apply the default theme
 params = {'figure.figsize':        (6, 4),
-          'xtick.labelsize':       18,
-          'ytick.labelsize':       18,
-          'axes.labelsize':        18,
+          'xtick.labelsize':       16,
+          'ytick.labelsize':       16,
+          'axes.labelsize':        16,
           'font.sans-serif':       'Arial',
           'lines.linewidth':       1.5,
           'axes.linewidth':        1,
-          'xtick.minor.visible':   False,
-          'ytick.minor.visible':   False,
+          'xtick.minor.visible':   True,
+          'ytick.minor.visible':   True,
           'xtick.direction':       'in',
           'ytick.direction':       'in',
           'xtick.major.width':     1,
@@ -47,8 +48,8 @@ params = {'figure.figsize':        (6, 4),
           'axes.formatter.limits': (0, 0),
           'axes.formatter.use_mathtext': True,
           'axes.formatter.useoffset':    False,
-          'axes.formatter.limits': (-2, 2),
-          'figure.dpi':            250,
+          'axes.formatter.limits': (-2, 3),
+          'figure.dpi':            300,
           }
 
 sns.set_theme(style='ticks', rc=params)
