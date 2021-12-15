@@ -1,6 +1,7 @@
 # image processing
 
 import numpy as np
+import matplotlib as mpl
 from PIL import Image, ImageStat, ImageOps, ImageDraw, ImageFont
 
 def generateImageSeq(imgs, stamps=None, stampsColor=(255, 255, 255), stampsSize=64, split=0, scaleBar=None, orient=1):
@@ -161,3 +162,13 @@ def ecHollow(df, gbname, palette):
                             # edgecolor=ecHollow(ampDataOriginFilter, r'$c$ (wt%)', seq_col))
     keys = list(df.groupby(gbname).groups.keys())
     return df[gbname].map(dict(zip(keys, palette)))
+
+def axMinorFix(ax, subsx=np.linspace(0.1, 0.9, 9), subsy=np.linspace(0.1, 0.9, 9), numticksx=50, numticksy=50):
+    locminx = mpl.ticker.LogLocator(base=10.0, subs=subsx, numticks=numticksx)
+    ax.xaxis.set_minor_locator(locminx)
+    ax.xaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+    
+    locminy = mpl.ticker.LogLocator(base=10.0, subs=subsy, numticks=numticksy)
+    ax.yaxis.set_minor_locator(locminy)
+    ax.yaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+

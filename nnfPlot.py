@@ -4,6 +4,7 @@
 # plot
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from IPython.display import display, HTML
 
 # data
@@ -29,7 +30,7 @@ warnings.filterwarnings('ignore')
 # Environment
 
 # Apply the default theme
-params = {'figure.figsize':        (6, 4),
+params = {'figure.figsize':        (4, 3),
           'xtick.labelsize':       16,
           'ytick.labelsize':       16,
           'axes.labelsize':        16,
